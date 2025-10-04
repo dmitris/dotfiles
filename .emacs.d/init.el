@@ -5,8 +5,7 @@
 (setq package-archives
       '(("gnu"    . "https://elpa.gnu.org/packages/")
         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-        ("melpa"  . "https://melpa.org/packages/")))
-(package-initialize)
+1(package-initialize)
 
 ;; ------------------------------------------------------------
 ;; Install essential packages (auto if missing)
@@ -30,11 +29,11 @@
       mac-command-modifier 'super)
 (global-display-line-numbers-mode 1)
 (column-number-mode 1)
-; modus-vivendi — modern, accessible, official GNU default
-; wombat — classic soft dark 
-; tango-dark — warm dark
-; deeper-blue - stron contrast
-(load-theme 'modus-vivendi t) 
+; modus-vivendi - modern, accessible, official GNU default
+; wombat - classic soft dark
+; tango-dark - warm dark
+; deeper-blue - strong contrast
+(load-theme 'wombat t)
 
 ;; ------------------------------------------------------------
 ;; Fonts (macOS)
@@ -74,10 +73,32 @@
 ;; ------------------------------------------------------------
 ;; Typst
 ;; ------------------------------------------------------------
-(use-package typst-mode
+(setq treesit-extra-load-path '("~/.emacs.d/tree-sitter"))
+;(use-package typst-ts-mode
+;  :elpaca (:type git :host sourcehut :repo "meow_king/typst-ts-mode")
+;  :custom
+;  (typst-ts-mode-watch-options "--open"))
+
+(use-package typst-ts-mode
   :ensure nil
-  :load-path "~/.emacs.d/lisp/typst-mode"
-  :mode "\\.typ\\'")
+  :load-path "~/.emacs.d/lisp/typst-ts-mode"
+  :mode ("\\.typ\\'" . typst-ts-mode)
+  :custom
+  (typst-ts-mode-watch-options "--open"))
+
+
+(defun typst-compile-current-file ()
+  "Compile the current Typst file to PDF."
+  (interactive)
+  (when (and buffer-file-name
+             (string-match "\\.typ\\'" buffer-file-name))
+    (shell-command
+     (format "typst compile %s %s.pdf"
+             (shell-quote-argument buffer-file-name)
+             (file-name-sans-extension buffer-file-name)))))
+
+(with-eval-after-load 'typst-ts-mode
+  (define-key typst-ts-mode-map (kbd "C-c C-c") #'typst-compile-current-file))
 
 ;; ------------------------------------------------------------
 ;; Programming languages
@@ -89,13 +110,6 @@
 ;; Git
 ;; ------------------------------------------------------------
 (global-set-key (kbd "C-x g") #'magit-status)
-
-;; ------------------------------------------------------------
-;; Misc
-;; ------------------------------------------------------------
-(when (display-graphic-p)
-  (mac-auto-operator-composition-mode))
-
 
 ; OLD config
 ; (require 'package)
